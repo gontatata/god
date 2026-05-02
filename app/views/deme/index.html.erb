@@ -1,0 +1,146 @@
+<div class="container py-5" style="max-width: 680px;">
+  <div class="text-center mb-4">
+    <div class="god-title">⚡ GOD 出目チェッカー ⚡</div>
+    <div class="god-subtitle mt-1">スマスロ ミリオンゴッド -神々の軌跡-</div>
+    <div class="god-subtitle" style="font-size:0.75rem; color:#666;">凱旋の出目データに基づくモード判定</div>
+  </div>
+
+  <div class="card-god p-4">
+    <div class="text-center mb-3" style="color:#ffd700; font-size:0.85rem; letter-spacing:0.15em;">
+      図柄をタップして出目を入力してください
+    </div>
+    <div class="reel-display" id="reelDisplay">
+      <div class="reel-slot active" id="reel0" onclick="selectReel(0)">?</div>
+      <div class="reel-slot" id="reel1" onclick="selectReel(1)">?</div>
+      <div class="reel-slot" id="reel2" onclick="selectReel(2)">?</div>
+    </div>
+    <div class="picker-grid" id="pickerGrid">
+      <% ["0","1","2","3","4","5","6","7","V"].each do |fig| %>
+        <button type="button" class="btn btn-outline-warning figure-btn" onclick="inputFigure('<%= fig %>')"><%= fig %></button>
+      <% end %>
+      <button type="button" class="btn btn-outline-secondary figure-btn" onclick="clearInput()" title="クリア">✕</button>
+    </div>
+    <div class="mt-3">
+      <div class="row g-2 align-items-center justify-content-center">
+        <div class="col-auto">
+          <input type="text" id="demeTextInput" class="form-control deme-input"
+                 maxlength="3" placeholder="例: 510" style="width:140px;"
+                 oninput="syncFromText()" value="<%= @input %>">
+        </div>
+        <div class="col-auto">
+          <button type="button" class="btn btn-god" onclick="submitDeme()">判定する</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <% if @result %>
+    <% cat = @result.category.to_s %>
+    <div class="result-card result-<%= cat %>">
+      <div class="text-center">
+        <div class="result-deme mb-1 <%= cat == 'reach' ? 'text-danger' : cat == 'choutenoku' || cat == 'tenkou_short' ? 'text-warning' : cat == 'tenkou_prep' ? 'text-info' : ['gstop_strong','chance'].include?(cat) ? 'text-success' : 'text-secondary' %>"
+             style="<%= cat == 'v_mode' ? 'color:#cc00ff;' : '' %>">
+          <%= @result.deme.chars.join(" ") %>
+        </div>
+        <% if @result.nickname %>
+          <span class="nickname-badge mb-2 d-inline-block"><%= @result.nickname %></span>
+        <% end %>
+        <div class="result-label mt-2 <%= cat == 'reach' ? 'text-danger' : cat == 'choutenoku' || cat == 'tenkou_short' ? 'text-warning' : cat == 'tenkou_prep' ? 'text-info' : ['gstop_strong','chance'].include?(cat) ? 'text-success' : 'text-secondary' %>"
+             style="<%= cat == 'v_mode' ? 'color:#cc00ff;' : '' %>">
+          <%= @result.level[:label] %>
+        </div>
+        <div class="result-desc mt-2"><%= @result.description %></div>
+        <div class="mt-3" style="font-size:2rem;">
+          <% case cat
+             when 'reach'        then %><span>🔥🎰🔥</span><%
+             when 'v_mode'       then %><span>💜⚡💜</span><%
+             when 'choutenoku'   then %><span>🌟👑🌟</span><%
+             when 'tenkou_short' then %><span>⭐🔼⭐</span><%
+             when 'tenkou_prep'  then %><span>💫🔼💫</span><%
+             when 'gstop_strong' then %><span>🟢⚡🟢</span><%
+             when 'chance'       then %><span>🎯💚🎯</span><%
+             when 'gstop_weak'   then %><span>⬜💤⬜</span><%
+             else                     %><span>➖➖➖</span><%
+             end %>
+        </div>
+      </div>
+    </div>
+  <% end %>
+
+  <div class="mt-4">
+    <details>
+      <summary style="color:#ffd700; cursor:pointer; font-size:0.9rem; letter-spacing:0.1em;">📋 モード強度の見方</summary>
+      <div class="card-god p-3 mt-2">
+        <table class="table legend-table table-borderless mb-0">
+          <thead><tr><th>強度</th><th>モード</th><th>意味</th></tr></thead>
+          <tbody>
+            <tr><td>🔥🔥🔥</td><td class="text-danger">リーチ目</td><td>GG当選濃厚！</td></tr>
+            <tr><td>💜💜</td><td style="color:#cc00ff">Vモード確定/示唆</td><td>V図柄ハサミでVモード</td></tr>
+            <tr><td>🌟🌟</td><td class="text-warning">超天国濃厚</td><td>最上位モード確定級</td></tr>
+            <tr><td>⭐⭐</td><td style="color:#fd7e14">天国ショート以上</td><td>ハズレ時は特に有効</td></tr>
+            <tr><td>💫</td><td class="text-info">天国準備以上</td><td>上位モード示唆</td></tr>
+            <tr><td>🟢🟢</td><td class="text-success">G-STOP強チャンス</td><td>G-STOP前兆濃厚</td></tr>
+            <tr><td>🎯</td><td class="text-success">チャンス目</td><td>GG前兆に期待</td></tr>
+            <tr><td>⬜</td><td class="text-secondary">G-STOP弱チャンス</td><td>頻出で期待</td></tr>
+            <tr><td>➖</td><td class="text-secondary">通常目</td><td>特定示唆なし</td></tr>
+          </tbody>
+        </table>
+        <div class="mt-3" style="font-size:0.78rem; color:#888;">
+          <strong style="color:#aaa;">図柄の読み方:</strong> 0=ゼロ / 1〜8=数字 / V=V図柄<br>
+          ※左リール→中リール→右リールの順で入力
+        </div>
+      </div>
+    </details>
+  </div>
+</div>
+
+<script>
+  let currentReel = 0;
+  const values = ["", "", ""];
+  function selectReel(idx) {
+    currentReel = idx;
+    document.querySelectorAll(".reel-slot").forEach((el, i) => el.classList.toggle("active", i === idx));
+  }
+  function inputFigure(fig) {
+    values[currentReel] = fig;
+    document.getElementById("reel" + currentReel).textContent = fig;
+    if (currentReel < 2) selectReel(currentReel + 1);
+    syncToText();
+  }
+  function clearInput() {
+    values[0] = values[1] = values[2] = "";
+    ["reel0","reel1","reel2"].forEach(id => document.getElementById(id).textContent = "?");
+    selectReel(0);
+    document.getElementById("demeTextInput").value = "";
+  }
+  function syncToText() { document.getElementById("demeTextInput").value = values.join(""); }
+  function syncFromText() {
+    const raw = document.getElementById("demeTextInput").value.toUpperCase();
+    for (let i = 0; i < 3; i++) {
+      values[i] = raw[i] || "";
+      document.getElementById("reel" + i).textContent = raw[i] || "?";
+    }
+  }
+  function submitDeme() {
+    const deme = document.getElementById("demeTextInput").value.trim().toUpperCase();
+    if (deme.length !== 3) { alert("3桁の出目を入力してください（例: 510、V0V）"); return; }
+    const form = document.createElement("form");
+    form.method = "POST"; form.action = "<%= deme_search_path %>";
+    const csrf = document.createElement("input");
+    csrf.type = "hidden"; csrf.name = "authenticity_token";
+    csrf.value = document.querySelector('meta[name="csrf-token"]')?.content || "";
+    const input = document.createElement("input");
+    input.type = "hidden"; input.name = "deme"; input.value = deme;
+    form.appendChild(csrf); form.appendChild(input);
+    document.body.appendChild(form); form.submit();
+  }
+  document.addEventListener("keydown", e => { if (e.key === "Enter") submitDeme(); });
+  const initVal = "<%= @input %>";
+  if (initVal.length === 3) {
+    for (let i = 0; i < 3; i++) {
+      values[i] = initVal[i];
+      document.getElementById("reel" + i).textContent = initVal[i];
+    }
+    selectReel(0);
+  }
+</script>
