@@ -342,6 +342,7 @@ DEPENDENCIES
   kamal
   propshaft
   puma (>= 5.0)
+  rack (>= 2.2.4)
   rails (~> 8.0.1)
   rubocop-rails-omakase
   solid_cache
